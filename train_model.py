@@ -12,6 +12,7 @@ from torch.autograd import Variable
 from torch.nn.functional import relu
 from torch.utils.data import DataLoader
 from torch.nn.modules.loss import MSELoss
+from torchvision.transforms import Grayscale
 
 
 size = 64
@@ -24,15 +25,15 @@ class Train(nn.Module):
 
     def __init__(self):
         super(Train, self).__init__()
-        # input channel 3,output channel 6,kernel 3*3,default stride 1,default
+        # input channel 1,output channel 6,kernel 3*3,default stride 1,default
         # padding 0
-        self.conv1 = nn.Conv2d(3, 6, kernel_size=3)
+        self.conv1 = nn.Conv2d(1, 6, kernel_size=3)
         # input channel 6,output channel 16,kernel 3*3,default stride 1,default
         # padding 0
-        self.conv2 = nn.Conv2d(6, 16, kernel_size=3)
+        self.conv2 = nn.Conv2d(6, 32, kernel_size=3)
         # kernel size 2,default stride kernel
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc1 = nn.Linear(16*14*14, 120)
+        self.fc1 = nn.Linear(32*14*14, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 2)
 
@@ -42,7 +43,7 @@ class Train(nn.Module):
         # get 14*14
         x = self.pool(F.relu(self.conv2(x)))
         # this model is ensure the size of the picture 64*64
-        x = x.view(-1, 14*14*16)
+        x = x.view(-1, 14*14*32)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
@@ -51,15 +52,16 @@ class Train(nn.Module):
 
 # create the model,build the optimizer and the loss
 model = Train()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.95)
+optimizer = torch.optim.Adam(model.parameters())
 criterion = nn.CrossEntropyLoss()
 
 # load the pictures
 transform = transforms.Compose(
-    [transforms.ToTensor(),
+    [transforms.Grayscale(1),
+     transforms.ToTensor(),
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 data = datasets.ImageFolder(root=os.getcwd()+'/image', transform=transform)
-data_loader = DataLoader(dataset=data, batch_size=4,
+data_loader = DataLoader(dataset=data, batch_size=2,
                          num_workers=8, shuffle=True)
 
 # 循环迭代十次
@@ -85,6 +87,7 @@ for epoch in range(10):
             print('[%d, %5d] loss: %.3f' %
                   (epoch + 1, i + 1, running_loss / 2000))
             running_loss = 0.0
+
 
 torch.save(model, 'model.pkl')
 print('train finished!')
