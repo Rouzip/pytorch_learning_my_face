@@ -1,10 +1,12 @@
-import cv2
-import dlib
+import os
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision import datasets
 from torchvision import transforms
 from torch.autograd import Variable
+from torch.utils.data import DataLoader
 
 
 class Train(nn.Module):
@@ -26,6 +28,7 @@ class Train(nn.Module):
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 2)
         self.softmax = nn.Softmax(dim=None)
+        self.drop = nn.Dropout()
 
     def forward(self, x):
         # get 31*31
@@ -40,34 +43,26 @@ class Train(nn.Module):
         x = self.softmax(x)
         return x
 
+# load the pictures
+transform = transforms.Compose(
+    [transforms.Grayscale(1),
+     transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+test_data = datasets.ImageFolder(root=os.getcwd()+'/test_image',
+                                 transform=transform)
+test_loader = DataLoader(dataset=test_data, batch_size=4,
+                         num_workers=8, shuffle=True)
+
 
 model = torch.load('model.pkl').eval()
-# set the model verification mode
 
-
-# open the camera
-camera = cv2.VideoCapture(0)
-# get the img
-success, img = camera.read()
-detecter = dlib.get_frontal_face_detector()
-dets = detecter(img, 1)
-for i in dets:
-    for i in dets:
-        x1 = i.top() if i.top() > 0 else 0
-        y1 = i.bottom() if i. bottom() > 0 else 0
-        x2 = i.left() if i.left() > 0 else 0
-        y2 = i.right() if i.right() > 0 else 0
-
-    # get the img face exactly and adjust the img
-    face = img[x1:y1, x2:y2]
-    face = cv2.resize(face, (64, 64))
-    face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
-    face = torch.from_numpy(face)
-    face = face.float()
-    face = face.unsqueeze(0)
-    face = face.unsqueeze(0)
-    face = Variable(face)
-
-    out = model(face)
-
-    print(out)
+correct = 0.0
+total = 0.0
+for data in test_loader:
+    images, labels = data
+    outputs = model(Variable(images))
+    _, predict = torch.max(outputs.data, 1)
+    total += labels.size(0)
+    correct += (predict == labels).sum()
+print(correct/total)
