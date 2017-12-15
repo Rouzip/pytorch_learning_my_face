@@ -3,10 +3,9 @@
 
 ##环境要求
 >OS：Ubuntu16.04LTS 
-
->python：3.6.3 
->opencv：3.3.1 
->pytorch：0.3 
+>python：3.6.3
+>opencv：3.3.1
+>pytorch：0.3
 
 ## 获取素材
 首先需要准备好图片素材来给我们的模型进行训练。从该[网站](http://vis-www.cs.umass.edu/lfw/) 别人的人脸照片，然后运行
