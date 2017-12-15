@@ -2,9 +2,9 @@
 这个项目是我学习深度学习的第一个小玩具，通过pytorch进行CNN学习，识别出自己和别人的脸。
 
 ##环境要求
->OS：Ubuntu16.04LTS 
->python：3.6.3
->opencv：3.3.1
+>OS：Ubuntu16.04LTS  
+>python：3.6.3  
+>opencv：3.3.1  
 >pytorch：0.3
 
 ## 获取素材
