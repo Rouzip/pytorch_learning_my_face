@@ -50,5 +50,5 @@ python train_model.py
 pyhton test_model.py
 ```
 
-可以获得训练的结果，在我的测试中，准备率大约在98左右。
+可以获得训练的结果，在我的测试中，准确率大约在98左右。
 
